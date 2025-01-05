@@ -101,6 +101,24 @@ Maths for the  calulating timer values and how you arrive at this Ive created in
 
 ["Maths for Calculating timer0  values"](maths.pdf)
 
+
+## Semi final Layout of PCB 
+
+I will be changing this  over the next few weeks buto get you started this is a 
+fully working PCB  This was all done using Single sided  for ease and simplicity
+so as to  show you what  you can do by hand  without to many problems 
+
+
+
+See Image  below of Kicad PCB Layout 
+<p align = "center" >
+<img src = "images/PCBLayout.png" width = 400 >
+</p>
+
+
+
+
+
 ## Additional references that I sought  on ecountering issues  with MPLabX 
 
 -   (1) How to use libre office for maths equations
@@ -127,4 +145,4 @@ https://www.facebook.com/mark.harrington.14289/
 https://www.instagram.com/markukh2021/ 
 
 
-
+ 
