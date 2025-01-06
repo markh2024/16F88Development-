@@ -116,7 +116,9 @@ See Image  below of Kicad PCB Layout
 </p>
 
 
+### Please see link below for more in depth notes 
 
+[Aditional note for use with self tutorials and for tutors ](/TutorialNotes.MD)
 
 
 ## Additional references that I sought  on ecountering issues  with MPLabX 
