@@ -129,7 +129,7 @@ peripherals in a microcontroller. In this program, key registers and ports inclu
 
 ### See table below for more detail   
 I have included the dataheet for you to  view at this link 
-[The Pic 16F88 datasheet](dataheets/16F88.pdf)
+["The Pic 16F88 datasheet"](dataheets/16F88.pdf)
 
 <p align = "center" >
 <img src = "images/TableforOptionReg.png">
