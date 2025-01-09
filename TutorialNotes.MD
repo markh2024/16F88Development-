@@ -129,7 +129,7 @@ peripherals in a microcontroller. In this program, key registers and ports inclu
 
 ### See table below for more detail   
 I have included the dataheet for you to  view at this link 
-["The Pic 16F88 datasheet"](dataheets/16F88.pdf)
+[The Pic 16F88 datasheet](dataheets/16F88.pdf)
 
 <p align = "center" >
 <img src = "images/TableforOptionReg.png">
@@ -278,8 +278,204 @@ Blocks execution until the delay_counter matches the required delay. The counter
 
 In the main method which Ill explain later we set the value to 100  So if you work this out then what Im doing is pass the value of 100 to void delay ms method hence delay counter counts up  to 100 then moves on  hence our total delay = 100 * 1ms before  its  fires the next pin change on port B 
 
+#### Code within main method that does this 
+
+```
+void main() {
+    // Disable analog inputs and comparators
+    ANSEL = 0x00; // Set all pins to digital
+    CMCON = 0x07; // Disable comparators
+
+    // Configure PORTB as output
+    TRISB = 0x00; // All pins on PORTB set as outputs
+
+    // Configure oscillator for 2 MHz
+    OSCCON = 0x62; // Set IRCF = 100 (2 MHz), SCS = 0 (Clock source selected by configuration)
+    OSCTUNE = 0x00; // Default oscillator tuning
+    
+    // ********* This is where I set the delay ***************
+    
+    const int delay = 100; // adjust for delay 
+
+    // *******************************************************
+
+    // Initialize Timer0 for delay obtained from the header file 
+    init_timer0();
+
+    while (1) {
+        scan_portb_pins(delay); // Call the function with a delay of 100ms
+    }
+}   
+
+```
+
+###  Practical Use in scan_portb_pins function 
+
+Timer0 is indirectly used here to control the timing of operations on PORTB:
+
+#### Setting Pins HIGH and LOW:
+
+In the main method we set the TRISB Register  for input  or output  making a port pin  input is done  by setting the required bit in the TRISB register to 1  
+
+Making this output  is done by setting the TRISB register  to 0 
+
+### Note !!    
+Since we are only using portb and not wanting any  other readings on the PORTA  we also have to set other registers 
+
+Listed below are the registers 
+
+### The Ansel register and what it does 
+The Analog-to-Digital (A/D) converter module has
+seven inputs for 18/20 pin devices (PIC16F88 devices
+only).   
+
+The conversion of an analog input signal results in a
+corresponding 10-bit digital number. The A/D module
+has a high and low-voltage reference input that is
+software selectable to some combination of VDD, VSS,
+V REF- (RA2) or V REF+ (RA3).
+
+The A/D converter has a unique feature of being able
+to operate while the device is in Sleep mode. To oper-
+ate in Sleep, the A/D conversion clock must be derived
+from the A/D’s internal RC oscillator.
+
+#### Refer to datasheet for more information 
+
+<p align = "center" >
+<img src = "images/AnselRegister.png">
+</p>
+
+### Note the Ansel setting on main method  
+
+```
+Ansel = 0X00 ; 
+
+``` 
+
+- This  disables  the  anologue conversion module and ensures all pins are digital IO 
+
+
+The next register   that we need along sode this to ensure all port pins are digital IO is the CMCON Regsister 
+
+What you might like to do is look up the addresses of these registers  \
+
+How ever you will  find out more about this later and how you can also address and set values with these registers known as SFR's (Special function registers ) 
+
+Later on   you will learn more about this after you  have become reasonably acustommed to the hardware  and some use of the assembler which I think Ive stated is  quite important 
+
+### Explanation  of the CMCON Register 
+
+#### Note !!  Op amp thoery adviseable when you come to use this later 
+
+The comparator module contains two analog comparators. The inputs to the comparators are multiplexed with I/O port pins RA0 through RA3, while the outputs are multiplexed to pins RA3 and RA4.
+
+The CMCON register See block diagram below  controls the
+comparator input and output multiplexors. 
+
+<p align = "center" >
+<img src = "images/CMCONRegister.png">
+</p>
+
+### Note the settining in the main method 
+
+```
+ CMCON = 0x07; // Disable comparators
+```
+
+#### CMCON = 0x07 in Binary = 0000 0111 in binary.   
+
+When written to the CMCON register, it configures the bits as follows:
+
+<p align = "center" >
+<img src = "images/BitBreakdown.png">
+</p>
+
+### Comparator Mode (CM2:CM0)
+
+The bits CM2:CM0 (bits 2, 1, and 0) select the comparator mode:
+        
+-  000: Both comparators are enabled.
+-  001: Comparator 1 is enabled.
+-   010: Comparator 2 is enabled.
+-   011: Comparators are disabled, and all pins function as digital I/O.
+
+Thus, setting CM2:CM0 = 011 disables both comparators, allowing the corresponding pins to be used as general-purpose digital I/O pins.
+
+
+### Finally  we  can now see how scan_portb_pins function  works    
+
+#### Setting the pins   
+
+```
+// Code as follows 
+
+PORTB = (unsigned char)(1 << i);
+PORTB = 0x00; // Clear the port after each bit shift  
+
+/*  Here I am performing a left shit operation so as
+
+```
+Iterates through PORTB pins, setting one HIGH at a time and then turning them OFF.
+
+
+#### Delay Between Pin Changes:
+
+``` 
+delay_ms(delay_ms_val);
+```
+Uses Timer0 to create the delay between operations.
 
 
 
+###  Putting it altogether we arrive at this function below 
 
+```
+// Function to scan PORTB pins (RB0 to RB3) with a dynamic delay
+void scan_portb_pins(const unsigned int delay_ms_val) {
+    int i;
+
+    // Left to right (RB0 to RB3)
+    for (i = 0; i <= 3; i++) {
+        PORTB = (unsigned char)(1 << i); // Set one pin HIGH at a time
+        delay_ms(delay_ms_val); // Wait for the specified delay
+        PORTB = 0x00; // Turn all pins OFF
+    }
+
+    // Right to left (RB3 to RB0)
+    for (i = 3; i >= 0; i--) {
+        PORTB = (unsigned char)(1 << i); // Set one pin HIGH at a time
+        delay_ms(delay_ms_val); // Wait for the specified delay
+        PORTB = 0x00; // Turn all pins OFF
+    }
+}
+```
+
+This wraps up the tutorial for the coding and how I achieved this 
+
+Hope you all find this of use and happy coding  , learn as much as you can and  good luck 
+
+##  Got to be worth learning 
+
+
+You are now  one your  pathway to learing all about PIC Micro proccessors 
+and  will  within time  be able to do achieve all sorts and from the comfort of where ever you live staight across the net in some cases 
+
+
+
+### Thanking you 
+
+### MD Harrington  London Bexleyheath DA6 8NP 
+
+Here are my other links 
+
+### [Face Book Page ](https://www.facebook.com/mark.harrington.14289/)
+
+### [Instagram ](https://www.instagram.com/markukh2021/)
+
+### [Pastebin ](https://pastebin.com/u/Mark2020H)
+
+### [CodeShare ](https://codeshare.io/codes)
+
+### [Github Account year 2016](https://github.com/markh2016?tab=repositories)
 
